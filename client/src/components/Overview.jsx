@@ -1,0 +1,9 @@
+import { useEffect,useState } from 'react';
+import { BarChart,Bar,XAxis,YAxis,Tooltip,ResponsiveContainer,CartesianGrid } from 'recharts';
+import api from '../api';
+
+export default function Overview({user}) {
+ const [data,setData]=useState({students:0,todayPresent:0,todayAbsent:0,rate:0,trend:[]});
+ useEffect(()=>{api.get('/attendance/analytics').then(r=>setData(r.data)).catch(()=>{});},[]);
+ return <><section className="grid"><div className="stat"><small>Total students</small><strong>{data.students}</strong><span>Active student records</span></div><div className="stat"><small>Present today</small><strong>{data.todayPresent}</strong><span>Marked present</span></div><div className="stat"><small>Absent today</small><strong>{data.todayAbsent}</strong><span>Marked absent</span></div><div className="stat"><small>Attendance rate</small><strong>{data.rate}%</strong><span>Today's attendance</span></div></section><section className="panel"><div className="panel-head"><div><h2>Attendance overview</h2><span className="muted">Daily attendance over the last 7 days</span></div><span className="pill present">LIVE DATA</span></div><div className="chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={data.trend}><CartesianGrid strokeDasharray="3 3" vertical={false}/><XAxis dataKey="day"/><YAxis allowDecimals={false}/><Tooltip/><Bar dataKey="present" fill="#6575f5" radius={[5,5,0,0]}/><Bar dataKey="absent" fill="#f1a19a" radius={[5,5,0,0]}/></BarChart></ResponsiveContainer></div></section><section className="panel"><h2>Good {new Date().getHours()<12?'morning':new Date().getHours()<17?'afternoon':'evening'}, {user.name.split(' ')[0]}</h2><p className="muted">Use the navigation to manage student records and record class attendance. Attendance reports can be downloaded from the Attendance page.</p></section></>;
+}
