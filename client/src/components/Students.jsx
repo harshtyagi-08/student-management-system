@@ -1,0 +1,11 @@
+import { useEffect,useState } from 'react';
+import api from '../api';
+
+export default function Students({setError}) {
+ const [items,setItems]=useState([]);const [form,setForm]=useState({name:'',email:'',rollNumber:'',course:'MCA',password:'Student@123'});const [show,setShow]=useState(false);
+ const load=()=>api.get('/students').then(r=>setItems(r.data.students)).catch(e=>setError(e.response?.data?.message||'Could not load students'));
+ useEffect(()=>{load()},[]);
+ async function add(e){e.preventDefault();try{await api.post('/students',form);setForm({name:'',email:'',rollNumber:'',course:'MCA',password:'Student@123'});setShow(false);load()}catch(e){setError(e.response?.data?.message||'Could not add student')}}
+ async function remove(id){if(!confirm('Delete this student account?'))return;try{await api.delete('/students/'+id);load()}catch(e){setError(e.response?.data?.message||'Delete failed')}}
+ return <><div className="panel"><div className="panel-head"><div><h2>Student directory</h2><span className="muted">{items.length} registered students</span></div><button className="btn" onClick={()=>setShow(!show)}>{show?'Close':'＋ Add student'}</button></div>{show&&<form onSubmit={add}><div className="form-row">{[['name','Full name'],['email','Email'],['rollNumber','Roll number']].map(([k,l])=><div className="field" key={k}><label>{l}</label><input required value={form[k]} onChange={e=>setForm({...form,[k]:e.target.value})}/></div>)}</div><div className="form-row"><div className="field"><label>Course</label><input value={form.course} onChange={e=>setForm({...form,course:e.target.value})}/></div><div className="field"><label>Temporary password</label><input required value={form.password} onChange={e=>setForm({...form,password:e.target.value})}/></div><div className="field" style={{alignSelf:'end'}}><button className="btn">Create student</button></div></div></form>}<div className="table-wrap"><table><thead><tr><th>Student</th><th>Roll number</th><th>Course</th><th>Email</th><th>Action</th></tr></thead><tbody>{items.map(s=><tr key={s._id}><td><b>{s.name}</b></td><td>{s.rollNumber}</td><td>{s.course}</td><td>{s.email}</td><td><button className="btn danger" onClick={()=>remove(s._id)}>Delete</button></td></tr>)}</tbody></table>{!items.length&&<div className="empty">No students yet. Add the first student above.</div>}</div></div></>;
+}
